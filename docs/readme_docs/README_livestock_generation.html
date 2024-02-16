@@ -1,0 +1,82 @@
+<h1>🐄🐏 Livstock generation tool for cattle herds and sheep flocks</h1>
+<p>Based on the <a href="https://gmd.copernicus.org/articles/15/2239/2022/">GOBLIN</a> (<strong>G</strong>eneral <strong>O</strong>verview for a <strong>B</strong>ackcasting approach of <strong>L</strong>ivestock <strong>IN</strong>tensification) Cattle herd module. The package is designed to take as inputs the scenario parameters, while outputing dataframes of animal parameters for scenarios and the chosen baseline year. It also contains classes to export milk and beef outputs. </p>
+<p>The package is shipped with key data for past herd numbers, concentrate feed inputs, and animal features. </p>
+<p>Currently parameterised for Ireland, the framework can be adapted for other contexts.</p>
+<p>Outputs dataframes based on scenario inputs in relation to:</p>
+<pre><code>-   Livestock by cohort
+-   Livestock population
+-   Daily milk
+-   Live weight
+-   Forage type
+-   Grazing type
+-   Concentrate input type and quantity
+-   Time outdoors, indoors and stabled
+-   Wool
+-   Manure management systems
+-   Daily spread systems
+-   Number bought and sold
+</code></pre>
+<h2>Installation</h2>
+<p>Install from git hub. </p>
+<p>When prompted enter your <code>&lt;username&gt;</code> and password, which is your <code>&lt;access_token&gt;</code>.</p>
+<p><code>&lt;access_token&gt;</code> is provided by the repo manager.</p>
+<p><code>&lt;username&gt;</code> pass your own github username.</p>
+<p>```bash
+pip install "livestock_generation@git+https://github.com/colmduff/livestock_generation.git@main" </p>
+<p>```</p>
+<h2>Usage</h2>
+<p>```python
+from livestock_generation.livestock import AnimalData
+from livestock_generation.livestock_exports import Exports
+import pandas as pd</p>
+<p>def main():</p>
+<pre><code># Create the DataFrame with the provided data, this represents scenario inputs
+data = [
+    [0, "Dairy", "tank solid", 0, 0, 0.0879077282507005, 0.500607270596862, 0, 0, 0, 0.801458098547012, 0.36840211684271, 0.0555663357895664, 0.126070113756632, 0, 0, 0.0784928061838073, 0.120049095269181, 0, 0.0879200186051467, 0, 0, 0, 0, 136.870524806694, 105.00171069052, 0.591628596827221, 2080],
+    [0, "Dairy", "tank liquid", 172390.09063152, 0, 0.8, 0.500607270596862, 0, 0, 0, 0.801458098547012, 0.36840211684271, 0.0555663357895664, 0.126070113756632, 0, 0, 0.0784928061838073, 0.120049095269181, 0, 0.0879200186051467, 0, 0, 0, 0, 136.870524806694, 105.00171069052, 0.591628596827221, 2080],
+    [0, "Beef", "tank solid", 0, 0, 0.0879077282507005, 0.500607270596862, 0, 0, 0, 0.801458098547012, 0.36840211684271, 0.0555663357895664, 0.126070113756632, 0, 0, 0.0784928061838073, 0.120049095269181, 0, 0.0879200186051467, 0, 0, 0, 0, 136.870524806694, 105.00171069052, 0.591628596827221, 2080],
+    [0, "Beef", "tank liquid", 0, 27807.487070967, 0.0879077282507005, 0.500607270596862, 0, 0, 0, 0.801458098547012, 0.36840211684271, 0.0555663357895664, 0.126070113756632, 0, 0, 0.0784928061838073, 0.120049095269181, 0, 0.0879200186051467, 0, 0, 0, 0, 136.870524806694, 105.00171069052, 0.591628596827221, 2080],
+    [0, "Lowland sheep", "tank liquid", 0, 0, 0.0879077282507005, 0.500607270596862, 0, 0, 0, 0.801458098547012, 0.36840211684271, 0.0555663357895664, 0.126070113756632, 0, 0, 0.0784928061838073, 0.120049095269181, 0, 0.0879200186051467, 0, 0, 37812, 0, 136.870524806694, 105.00171069052, 0.591628596827221, 2080],
+    [0, "Upland sheep", "tank liquid", 0, 0, 0.0879077282507005, 0.500607270596862, 0, 0, 0, 0.801458098547012, 0.36840211684271, 0.0555663357895664, 0.126070113756632, 0, 0, 0.0784928061838073, 0.120049095269181, 0, 0.0879200186051467, 9453, 0, 0, 0, 136.870524806694, 105.00171069052, 0.591628596827221, 2080]
+]
+
+columns = ["Scenarios", "Cattle systems", "Manure management", "Dairy pop", "Beef pop", "Dairy prod", "Beef prod", "mm_storage", "Cattle EF", "AD prod", "Forest area", "Conifer proportion", "Conifer harvest", "Conifer thinned", "Broadleaf harvest", "Bioenergy area", "Crop area", "Wetland area", "Land rewetting", "Grass management", "Upland sheep pop", "Upland sheep prod", "Lowland sheep pop", "Lowland sheep prod", "Dairy Pasture fertilisation", "Beef Pasture fertilisation", "Broadleaf proportion", "Afforest Year"]
+
+scenario_dataframe = pd.DataFrame(data, columns=columns)
+
+#create additional parameters
+baseline_year = 2018
+target_year = 2050
+ef_country = "ireland"
+
+
+#create classes for the generation of animal data and livestock ouput data 
+animal_class = AnimalData(ef_country, baseline_year, target_year, scenario_dataframe)
+export_class = Exports(ef_country, baseline_year, target_year, scenario_dataframe)
+
+#create dataframe for baseline year animals
+baseline_data = animal_class.create_baseline_animal_dataframe()
+
+#create dataframe for scenarios animals
+scenario_data = animal_class.create_animal_dataframe()
+
+
+#Create dataframes for beef and milk output
+beef_outputs = export_class.compute_system_protien_exports(scenario_data, baseline_data)
+
+dairy_outputs = export_class.compute_system_milk_exports(scenario_data, baseline_data)
+
+#Print generated data
+print(baseline_data)
+
+print(scenario_data)
+
+print(beef_outputs)
+
+print(dairy_outputs)
+</code></pre>
+<p>if <strong>name</strong> == "<strong>main</strong>":
+    main()</p>
+<p>```</p>
+<h2>License</h2>
+<p>This project is licensed under the terms of the MIT license.</p>

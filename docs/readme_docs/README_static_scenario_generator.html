@@ -1,0 +1,53 @@
+<h1>💻 Scenario Assessment Tool for GOBLIN scenarios</h1>
+<p>This module was constructed to assess and rank <a href="https://gmd.copernicus.org/articles/15/2239/2022/">GOBLIN</a> (<strong>G</strong>eneral <strong>O</strong>verview for a <strong>B</strong>ackcasting approach of <strong>L</strong>ivestock <strong>IN</strong>tensification) scenarios.</p>
+<p>The latest iterations of GOBLIN systematically produce a range of environmental impacts, as well as livestock ouput data (total protein). Scenario outputs are ranked according to thier overall environmental change, and the change to the baseline livestock outouts. </p>
+<p>Scenarios the meet a specified environmental objective are sorted and ranked. The cost to livestock output is prioritised, with the environmental parameters then factored at varios weights. </p>
+<pre><code>    climate_weight = .8 
+    eutrophication_weight = .7
+    ammonia_weight = .6
+</code></pre>
+<h2>Installation</h2>
+<p>Install from git hub. </p>
+<p>When prompted enter your <code>&lt;username&gt;</code> and password, which is your <code>&lt;access_token&gt;</code>.</p>
+<p><code>&lt;access_token&gt;</code> is provided by the repo manager.</p>
+<p><code>&lt;username&gt;</code> pass your own github username.</p>
+<p>```bash
+pip install "scenario_assessment@git+https://github.com/colmduff/scenario_assessment.git@main" </p>
+<p>```</p>
+<h2>Usage</h2>
+<p>The results of the scenarios are passed, using a dictionary, to the FilterResults class. </p>
+<p>In addition, the target amount is also passed, as a proportion. As well as the selected global warming gas.</p>
+<p>The search() method is used to rank results.</p>
+<p>```python
+import pandas as pd 
+import os
+from scenario_assessment.filter import FilterResults</p>
+<p>def main():</p>
+<pre><code>path = "./data"
+
+climate = pd.read_csv(os.path.join(path, "total_emissions.csv"), index_col =0)
+eutrophication = pd.read_csv(os.path.join(path, "eutrophication_total.csv"), index_col =0)
+air = pd.read_csv(os.path.join(path, "air_quality_total.csv"), index_col =0)
+products = pd.read_csv(os.path.join(path, "beef_and_milk.csv"), index_col =0)
+
+emission_dict = {"climate_change": climate,
+    "air_quality": air,
+    "eutrophication":eutrophication,
+    "protein_output": products}
+
+target = 0.02
+gas = "CH4"
+
+filter_class = FilterResults(target, gas, emission_dict)
+
+print(filter_class.total_gwp_gas)
+
+search_results = filter_class.search()
+
+print(search_results)
+</code></pre>
+<p>if <strong>name</strong> == "<strong>main</strong>":
+    main()
+```</p>
+<h2>License</h2>
+<p>This project is licensed under the terms of the MIT license.</p>
